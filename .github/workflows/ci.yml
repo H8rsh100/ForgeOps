@@ -83,13 +83,14 @@ jobs:
           terraform init -backend=false
           terraform validate
 
-  docker-build:
-    name: Build & Push Docker Images
+  docker-build-scan:
+    name: Build, Scan & Push Docker Images
     needs: [lint-and-test, helm-lint, terraform-lint]
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
+      security-events: write
 
     steps:
       - name: Checkout Code
@@ -97,6 +98,42 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+
+      - name: Build local api-service image for scan
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/api-service
+          file: ./services/api-service/Dockerfile
+          load: true
+          tags: api-service:test
+
+      - name: Run Trivy Vulnerability Scan (api-service)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'api-service:test'
+          format: 'table'
+          exit-code: '0'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Build local worker-service image for scan
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/worker-service
+          file: ./services/worker-service/Dockerfile
+          load: true
+          tags: worker-service:test
+
+      - name: Run Trivy Vulnerability Scan (worker-service)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'worker-service:test'
+          format: 'table'
+          exit-code: '0'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
 
       - name: Log in to Container Registry
         if: github.event_name != 'pull_request'
@@ -106,22 +143,24 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push api-service
+      - name: Push api-service image
+        if: github.event_name != 'pull_request'
         uses: docker/build-push-action@v5
         with:
           context: ./services/api-service
           file: ./services/api-service/Dockerfile
-          push: ${{ github.event_name != 'pull_request' }}
+          push: true
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PREFIX }}-api-service:${{ github.sha }}
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PREFIX }}-api-service:latest
 
-      - name: Build and push worker-service
+      - name: Push worker-service image
+        if: github.event_name != 'pull_request'
         uses: docker/build-push-action@v5
         with:
           context: ./services/worker-service
           file: ./services/worker-service/Dockerfile
-          push: ${{ github.event_name != 'pull_request' }}
+          push: true
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PREFIX }}-worker-service:${{ github.sha }}
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PREFIX }}-worker-service:latest

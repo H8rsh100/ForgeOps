@@ -9,19 +9,52 @@ ForgeOps is a production-grade, self-hosted **Internal Developer Platform (IDP)*
 
 ## 🏗️ Architecture Overview
 
-ForgeOps unifies modern DevOps tooling into an end-to-end local platform:
+```mermaid
+flowchart TB
+    subgraph Developer Workspace
+        DEV[Developer Code] -->|git push| GITHUB[GitHub Repository]
+    end
 
-- **Infrastructure as Code (IaC)**: Terraform provisioning a Kubernetes (`kind`) cluster with customized node roles and port mappings.
-- **Microservices**: Python FastAPI (`api-service`) and a asynchronous background processing worker (`worker-service`).
-- **Containerization**: Multi-stage Docker builds with security hardening and non-root execution.
-- **Helm Package Management**: Modular Helm charts with environment-specific overrides (`dev`, `staging`, `prod`).
-- **Continuous Integration (CI)**: GitHub Actions workflow for linting, testing, Docker image builds, and Trivy security scanning.
-- **GitOps Continuous Deployment (CD)**: ArgoCD watching GitOps manifests and enforcing automated synchronization.
-- **Secrets Management**: Sealed Secrets controller for encrypted in-git secret management.
-- **Observability Stack**: Prometheus, Grafana dashboards, and Loki log aggregation.
-- **Policy & Security**: OPA Gatekeeper for Kubernetes policy enforcement and resource constraints.
-- **Chaos Engineering**: Automated pod chaos and network fault injection scripts.
-- **Platform UI**: React-based unified Developer Dashboard.
+    subgraph CI/CD Pipeline (GitHub Actions)
+        GITHUB --> CI[CI Workflow]
+        CI -->|Lint & Pytest| TEST[Unit & Chart Validation]
+        CI -->|Docker Build| DOCKER[Container Images]
+        DOCKER -->|Security Gate| TRIVY[Trivy Vulnerability Scan]
+        TRIVY -->|Publish| GHCR[GHCR Registry]
+    end
+
+    subgraph Infrastructure Provisioning (Terraform)
+        TF[Terraform] -->|Provision| KIND[Kind Kubernetes Cluster]
+    end
+
+    subgraph Kubernetes Cluster Workloads
+        KIND --> NS[Namespace: default]
+        NS --> API[api-service Deployment]
+        NS --> WORKER[worker-service Deployment]
+        API <-->|REST API / Metrics| WORKER
+    end
+
+    GHCR -.->|Helm Deploy| KIND
+```
+
+---
+
+## 📦 Microservices Overview
+
+### 1. `api-service` (FastAPI REST API)
+- **Role**: Primary API gateway and business logic controller for the platform.
+- **Endpoints**:
+  - `GET /health` & `GET /ready`: Kubernetes liveness and readiness probe targets.
+  - `GET /api/v1/info`: Platform state and environment telemetry.
+  - `POST /api/v1/jobs` & `GET /api/v1/jobs`: Enqueue and query deployment pipeline jobs.
+  - `GET /metrics`: Prometheus formatted gauge and counter metrics (`forgeops_uptime_seconds`, `forgeops_jobs_total`).
+- **Tech Stack**: Python 3.11, FastAPI, Uvicorn, Pydantic v2.
+
+### 2. `worker-service` (Async Background Processing Worker)
+- **Role**: Consumes enqueued platform tasks, performs background sync and health verification.
+- **Health Server**: Exposes lightweight health server on port `8080` for cluster probes.
+- **Lifecycle**: Handles graceful shutdowns (`SIGINT`, `SIGTERM`) to guarantee zero task loss.
+- **Tech Stack**: Python 3.11, Requests, Pydantic v2.
 
 ---
 
@@ -30,17 +63,18 @@ ForgeOps unifies modern DevOps tooling into an end-to-end local platform:
 ```text
 forgeops/
 ├── infra/                 # Infrastructure as Code (Terraform & Kind configs)
-│   ├── terraform/         # Cluster Terraform modules
-│   └── kind-config.yaml   # Kind cluster topology configuration
+│   ├── terraform/         # Cluster Terraform modules (main.tf, variables.tf, outputs.tf)
+│   └── kind-config.yaml   # Kind cluster topology configuration (1 Control plane, 2 Workers)
 ├── services/              # Microservices source code
-│   ├── api-service/       # FastAPI REST API service
+│   ├── api-service/       # FastAPI REST API service + Pytest test suite
 │   └── worker-service/    # Background asynchronous worker
 ├── charts/                # Helm deployment charts
-│   ├── api-service/       # API service Helm chart
-│   └── worker-service/    # Worker service Helm chart
+│   ├── api-service/       # API service Helm chart + dev/staging/prod values
+│   └── worker-service/    # Worker service Helm chart + dev/staging/prod values
 ├── gitops/                # GitOps environment manifests (dev, staging, prod)
 ├── .github/               # GitHub Actions CI/CD workflows
 │   └── workflows/
+│       └── ci.yml         # CI pipeline (lint, test, build, trivy scan, push)
 ├── observability/         # Monitoring & Logging (Prometheus, Grafana, Loki)
 ├── policies/              # Policy as Code (OPA / Gatekeeper)
 ├── chaos/                 # Chaos engineering scripts

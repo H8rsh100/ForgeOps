@@ -1,0 +1,15 @@
+replicaCount: 2
+
+image:
+  tag: "staging-latest"
+
+env:
+  pollInterval: "5.0"
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 128Mi
+  requests:
+    cpu: 50m
+    memory: 64Mi

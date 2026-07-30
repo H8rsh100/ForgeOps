@@ -1,0 +1,15 @@
+replicaCount: 1
+
+image:
+  tag: "dev-latest"
+
+env:
+  pollInterval: "2.0"
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 64Mi
+  requests:
+    cpu: 25m
+    memory: 32Mi

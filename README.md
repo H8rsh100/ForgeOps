@@ -28,7 +28,7 @@ flowchart TB
     end
 
     subgraph Kubernetes Cluster Workloads
-        KIND --> NS[Namespace: default]
+        KIND --> NS[Namespace: forgeops-dev]
         NS --> API[api-service Deployment]
         NS --> WORKER[worker-service Deployment]
         API <-->|REST API / Metrics| WORKER
@@ -71,6 +71,9 @@ forgeops/
 ├── charts/                # Helm deployment charts
 │   ├── api-service/       # API service Helm chart + dev/staging/prod values
 │   └── worker-service/    # Worker service Helm chart + dev/staging/prod values
+├── scripts/               # Automation & verification scripts
+│   ├── deploy-local.sh    # Kind load & Helm install automation script
+│   └── verify-day1.py     # End-to-End local verification script
 ├── gitops/                # GitOps environment manifests (dev, staging, prod)
 ├── .github/               # GitHub Actions CI/CD workflows
 │   └── workflows/
@@ -84,22 +87,26 @@ forgeops/
 
 ---
 
-## 🚀 Quick Start & Prerequisites
+## 🚀 Quick Start & Verification
 
-### Prerequisites
-- [Docker Desktop / Docker Engine](https://www.docker.com/) (v24.0+)
-- [Kind (Kubernetes in Docker)](https://kind.sigs.k8s.io/) (v0.20+)
-- [Terraform](https://www.terraform.io/) (v1.5+)
-- [kubectl](https://kubernetes.io/docs/tasks/tools/) (v1.27+)
-- [Helm](https://helm.sh/) (v3.12+)
+### Local End-to-End Verification
+```bash
+python scripts/verify-day1.py
+```
+
+### Local Cluster Deployment
+```bash
+chmod +x scripts/deploy-local.sh
+./scripts/deploy-local.sh
+```
 
 ---
 
 ## 📜 Roadmap
 
-- [x] **Day 1**: Infrastructure, Microservices, Helm Charts & CI Pipeline
-- [ ] **Day 2**: GitOps Engine, ArgoCD, Sealed Secrets & Automated Deployment
-- [ ] **Day 3**: Observability, OPA Policy Enforcement, Chaos Testing & IDP Dashboard
+- [x] **Day 1**: Infrastructure, Microservices, Helm Charts & CI Pipeline (21 Commits Completed)
+- [ ] **Day 2**: GitOps Engine, ArgoCD, Sealed Secrets & Automated Deployment (9 Commits Planned)
+- [ ] **Day 3**: Observability, OPA Policy Enforcement, Chaos Testing & IDP Dashboard (17 Commits Planned)
 
 ---
 

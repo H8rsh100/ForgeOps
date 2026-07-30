@@ -1,0 +1,26 @@
+replicaCount: 1
+
+image:
+  repository: forgeops/worker-service
+  pullPolicy: IfNotPresent
+  tag: "v1.0.0"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+env:
+  pollInterval: "5.0"
+  apiServiceUrl: "http://api-service:8000"
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 128Mi
+  requests:
+    cpu: 50m
+    memory: 64Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

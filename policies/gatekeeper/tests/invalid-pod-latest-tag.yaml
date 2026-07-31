@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bad-pod-test
+  namespace: forgeops-dev
+spec:
+  containers:
+    - name: unpinned-app
+      image: nginx:latest

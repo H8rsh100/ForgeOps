@@ -1,0 +1,17 @@
+replicaCount: 2
+
+image:
+  repository: ghcr.io/h8rsh100/forgeops-worker-service
+  tag: "latest"
+
+env:
+  pollInterval: "5.0"
+  apiServiceUrl: "http://api-service:8000"
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 128Mi
+  requests:
+    cpu: 50m
+    memory: 64Mi

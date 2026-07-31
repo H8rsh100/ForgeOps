@@ -1,6 +1,7 @@
 import React from 'react';
 import './App.css';
 import DeployStatusPanel from './components/DeployStatusPanel';
+import MetricsPanel from './components/MetricsPanel';
 
 function App() {
   return (
@@ -16,8 +17,9 @@ function App() {
         </div>
       </header>
 
-      <main style={{ marginTop: '2rem' }}>
+      <main style={{ marginTop: '2rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
         <DeployStatusPanel />
+        <MetricsPanel />
       </main>
     </div>
   );

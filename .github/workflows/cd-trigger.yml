@@ -1,0 +1,43 @@
+name: GitOps CD Trigger
+
+on:
+  workflow_run:
+    workflows: ["ForgeOps CI"]
+    types:
+      - completed
+
+jobs:
+  update-gitops-manifests:
+    name: Bump GitOps Image Tags
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up yq / sed to update image tags
+        run: |
+          IMAGE_TAG="${{ github.sha }}"
+          echo "Updating GitOps dev environment image tag to $IMAGE_TAG"
+          
+          # Update api-service dev values
+          sed -i "s/tag: .*/tag: \"${IMAGE_TAG}\"/g" gitops/dev/api-service-values.yaml
+          
+          # Update worker-service dev values
+          sed -i "s/tag: .*/tag: \"${IMAGE_TAG}\"/g" gitops/dev/worker-service-values.yaml
+
+      - name: Commit and Push Image Tag Bump
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add gitops/dev/*.yaml
+          
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(gitops): bump dev image tags to ${{ github.sha }} [skip ci]"
+            git push origin main
+          else
+            echo "No image tag changes to commit."
+          fi

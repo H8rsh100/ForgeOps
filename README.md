@@ -1,13 +1,13 @@
-# ForgeOps — Self-Hosted Internal Developer Platform
+# ForgeOps — Self-Hosted Internal Developer Platform (IDP)
 
 [![ForgeOps CI](https://github.com/H8rsh100/ForgeOps/actions/workflows/ci.yml/badge.svg)](https://github.com/H8rsh100/ForgeOps/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-ForgeOps is a production-grade, self-hosted **Internal Developer Platform (IDP)** architecture designed to demonstrate full-lifecycle DevOps, GitOps, Infrastructure-as-Code (IaC), Observability, Policy Enforcement, and Chaos Engineering.
+ForgeOps is a production-grade, self-hosted **Internal Developer Platform (IDP)** architecture built to demonstrate full-lifecycle DevOps, GitOps, Infrastructure-as-Code (IaC), Observability, Policy Enforcement, Chaos Engineering, and Platform Tooling.
 
 ---
 
-## 🏗️ Architecture Overview
+## 🏗️ Platform Architecture
 
 ```mermaid
 flowchart TB
@@ -25,41 +25,42 @@ flowchart TB
         CD -->|Bump Image Tag| GITOPS_REPO[gitops/ directory]
     end
 
-    subgraph GitOps Continuous Deployment (ArgoCD)
+    subgraph GitOps Engine (ArgoCD & Security)
         GITOPS_REPO -.->|Automated Watch & Self-Heal| ARGOCD[ArgoCD Controller]
         ARGOCD -->|Auto-Sync Manifests| KIND[Kind Kubernetes Cluster]
+        SECRETS[Bitnami Sealed Secrets] -->|Decrypt Secrets| KIND
     end
 
-    subgraph Kubernetes Cluster Workloads
-        KIND --> NS_DEV[Namespace: forgeops-dev]
-        KIND --> NS_PROD[Namespace: forgeops-prod]
-        NS_DEV --> API[api-service Deployment]
-        NS_DEV --> WORKER[worker-service Deployment]
-        NS_DEV --> SECRETS[Bitnami Sealed Secrets]
+    subgraph Governance & Reliability
+        OPA[OPA Gatekeeper] -->|Policy Enforcement| KIND
+        CHAOS[Chaos Testing Scripts] -->|Fault Injection| KIND
+    end
+
+    subgraph Observability & Control Plane
+        KIND --> PROM[Prometheus Telemetry]
+        KIND --> LOKI[Loki & Promtail Logs]
+        PROM --> GRAF[Grafana Dashboards]
+        ARGOCD & PROM --> DASH[ForgeOps IDP React Dashboard]
     end
 ```
 
 ---
 
-## 📦 Microservices & GitOps Engine Overview
+## 🛠️ Technology Stack & Learning Objectives
 
-### 1. `api-service` (FastAPI REST API)
-- **Role**: Primary API gateway and business logic controller for the platform.
-- **Endpoints**:
-  - `GET /health` & `GET /ready`: Kubernetes liveness and readiness probe targets.
-  - `GET /api/v1/info`: Platform state and environment telemetry.
-  - `POST /api/v1/jobs` & `GET /api/v1/jobs`: Enqueue and query deployment pipeline jobs.
-  - `GET /metrics`: Prometheus formatted gauge and counter metrics.
-- **Tech Stack**: Python 3.11, FastAPI, Uvicorn, Pydantic v2.
-
-### 2. `worker-service` (Async Background Processing Worker)
-- **Role**: Consumes enqueued platform tasks, performs background sync and health verification.
-- **Health Server**: Exposes lightweight health server on port `8080` for cluster probes.
-- **Tech Stack**: Python 3.11, Requests, Pydantic v2.
-
-### 3. GitOps & Secrets Management Engine
-- **ArgoCD App-of-Apps**: Automatically watches `gitops/argocd/applications/` to manage multi-environment deployment definitions.
-- **Sealed Secrets Controller**: Decrypts committed `SealedSecret` manifests into Kubernetes `v1/Secret` objects safely without plaintext exposure in Git.
+| Domain | Technology | Learning Objective & Implementation |
+|---|---|---|
+| **IaC** | Terraform & Kind | Multi-node Kubernetes cluster topology with port mapping (`main.tf`, `kind-config.yaml`). |
+| **Microservices** | Python FastAPI & Worker | REST API gateway (`api-service`) and background processing daemon (`worker-service`). |
+| **Containerization** | Docker | Multi-stage hardened builds with non-root security execution. |
+| **Packaging** | Helm 3 | Templated deployment charts with tier overrides (`dev`, `staging`, `prod`). |
+| **CI Pipeline** | GitHub Actions | Automated linting, pytest, Helm verification, Docker build, and Trivy CVE scanning. |
+| **GitOps CD** | ArgoCD | Declarative App-of-Apps continuous deployment with automated self-healing. |
+| **Secrets** | Sealed Secrets | Asymmetric in-git credential encryption without plaintext exposure. |
+| **Observability** | Prometheus, Grafana, Loki | Full-stack metrics scraping, log aggregation, and custom alerting rules. |
+| **Policy as Code** | OPA Gatekeeper | Rego admission constraints blocking `:latest` tags and requiring resource limits. |
+| **Chaos Eng.** | Bash / Traffic Control | Automated pod-kill and network latency fault injection testing. |
+| **Platform UI** | React | Single-pane-of-glass IDP dashboard pulling deployment status and telemetry metrics. |
 
 ---
 
@@ -68,52 +69,54 @@ flowchart TB
 ```text
 forgeops/
 ├── infra/                 # Infrastructure as Code (Terraform & Kind configs)
-│   ├── terraform/         # Cluster Terraform modules (main.tf, variables.tf, outputs.tf)
-│   └── kind-config.yaml   # Kind cluster topology configuration (1 Control plane, 2 Workers)
-├── services/              # Microservices source code
-│   ├── api-service/       # FastAPI REST API service + Pytest test suite
-│   └── worker-service/    # Background asynchronous worker
-├── charts/                # Helm deployment charts
-│   ├── api-service/       # API service Helm chart + dev/staging/prod values
-│   └── worker-service/    # Worker service Helm chart + dev/staging/prod values
-├── gitops/                # GitOps repository single-source-of-truth
-│   ├── dev/               # Development environment values & SealedSecrets
-│   ├── staging/           # Staging environment values
-│   ├── prod/              # Production environment values & SealedSecrets
-│   ├── argocd/            # ArgoCD App-of-Apps and Application manifests
-│   └── RUNBOOK.md         # Operational GitOps runbook & sequence diagrams
-├── secrets/               # Sealed Secrets installation scripts & docs
-├── scripts/               # Automation & verification scripts
-│   ├── deploy-local.sh    # Kind load & Helm install automation script
-│   ├── verify-day1.py     # Day 1 verification script
-│   └── test-gitops-e2e.py # Day 2 GitOps E2E verification script
-├── .github/               # GitHub Actions CI/CD workflows
-│   └── workflows/
-│       ├── ci.yml         # CI pipeline (lint, test, build, trivy scan, push)
-│       └── cd-trigger.yml # CD trigger workflow (auto-bump image tags in GitOps repo)
-├── README.md
-└── forgeops-plan.md
+├── services/              # Microservices (api-service & worker-service)
+├── charts/                # Helm deployment charts (api-service & worker-service)
+├── gitops/                # GitOps environment manifests & ArgoCD App-of-Apps
+├── secrets/               # Sealed Secrets controller setup & docs
+├── observability/         # Prometheus, Grafana, Loki & alerting rules
+├── policies/              # OPA Gatekeeper policy templates & constraints
+├── chaos/                 # Pod-kill & network latency chaos test scripts
+├── dashboard/             # React Platform IDP UI dashboard
+├── scripts/               # Automated local deploy & E2E verification tools
+└── README.md
 ```
 
 ---
 
-## 🚀 Quick Start & Verification
+## 🚀 Quick Start Guide
 
-### Run End-to-End GitOps Test
+### 1. Provision Infrastructure
+```bash
+cd infra/terraform
+./apply.sh
+```
+
+### 2. Install ArgoCD & Sealed Secrets
+```bash
+./gitops/argocd/install-argocd.sh
+./secrets/install-sealed-secrets.sh
+```
+
+### 3. Deploy Observability & Policies
+```bash
+./observability/prometheus/install-prometheus.sh
+./observability/grafana/install-grafana.sh
+./policies/gatekeeper/install-gatekeeper.sh
+```
+
+### 4. Run End-to-End Verification
 ```bash
 python scripts/test-gitops-e2e.py
+bash chaos/run-chaos-suite.sh
 ```
-
-### Read the GitOps Runbook
-See [gitops/RUNBOOK.md](file:///c:/PROJECTS/ForgeOps/gitops/RUNBOOK.md) for detailed ArgoCD operation guidelines and manual sync commands.
 
 ---
 
-## 📜 Roadmap
+## 📜 Complete 3-Day Roadmap
 
 - [x] **Day 1**: Infrastructure, Microservices, Helm Charts & CI Pipeline (21 Commits Completed)
 - [x] **Day 2**: GitOps Engine, ArgoCD, Sealed Secrets & Automated Deployment (9 Commits Completed)
-- [ ] **Day 3**: Observability, OPA Policy Enforcement, Chaos Testing & IDP Dashboard (17 Commits Planned)
+- [x] **Day 3**: Observability, OPA Policy Enforcement, Chaos Testing & IDP Dashboard (17 Commits Completed)
 
 ---
 

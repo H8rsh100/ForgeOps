@@ -20,6 +20,10 @@ spec:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          envFrom:
+            - secretRef:
+                name: api-db-credentials
+                optional: true
           ports:
             - name: http
               containerPort: 8000

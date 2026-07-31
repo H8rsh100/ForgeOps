@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: forgeops-root-app
+  name: api-service-prod
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
@@ -10,10 +10,13 @@ spec:
   source:
     repoURL: https://github.com/H8rsh100/ForgeOps.git
     targetRevision: HEAD
-    path: gitops/argocd/applications
+    path: charts/api-service
+    helm:
+      valueFiles:
+        - ../../gitops/prod/api-service-values.yaml
   destination:
     server: https://kubernetes.default.svc
-    namespace: argocd
+    namespace: forgeops-prod
   syncPolicy:
     automated:
       prune: true
@@ -21,6 +24,7 @@ spec:
     syncOptions:
       - CreateNamespace=true
       - ApplyOutOfSyncOnly=true
+      - PruneLast=true
     retry:
       limit: 5
       backoff:

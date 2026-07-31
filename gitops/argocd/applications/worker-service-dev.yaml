@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: worker-service-dev
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/H8rsh100/ForgeOps.git
+    targetRevision: HEAD
+    path: charts/worker-service
+    helm:
+      valueFiles:
+        - ../../gitops/dev/worker-service-values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: forgeops-dev
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

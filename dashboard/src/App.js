@@ -1,5 +1,6 @@
 import React from 'react';
 import './App.css';
+import DeployStatusPanel from './components/DeployStatusPanel';
 
 function App() {
   return (
@@ -15,10 +16,8 @@ function App() {
         </div>
       </header>
 
-      <main>
-        <div className="grid-container">
-          <p style={{ color: '#94a3b8' }}>Platform Panels Initialized...</p>
-        </div>
+      <main style={{ marginTop: '2rem' }}>
+        <DeployStatusPanel />
       </main>
     </div>
   );

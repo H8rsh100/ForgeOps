@@ -1,0 +1,29 @@
+groups:
+  - name: forgeops_alerts
+    rules:
+      - alert: PodCrashLooping
+        expr: rate(kube_pod_container_status_restarts_total{namespace=~"forgeops-.*"}[5m]) * 60 > 2
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Pod {{ $labels.pod }} is crash looping"
+          description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has restarted more than 2 times in 5 minutes."
+
+      - alert: HighMemoryUsage
+        expr: container_memory_usage_bytes{namespace=~"forgeops-.*"} / container_spec_memory_limit_bytes > 0.85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container {{ $labels.container }} memory usage high"
+          description: "Memory usage of {{ $labels.container }} is above 85% of assigned limit."
+
+      - alert: ServiceDown
+        expr: up{job=~"forgeops-.*"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.job }} is unreachable"
+          description: "Target {{ $labels.job }} target failed health check probes."

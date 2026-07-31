@@ -1,0 +1,22 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'forgeops-api-service'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['api-service.forgeops-dev.svc.cluster.local:8000']
+
+  - job_name: 'forgeops-worker-service'
+    metrics_path: '/health'
+    static_configs:
+      - targets: ['worker-service.forgeops-dev.svc.cluster.local:8080']
+
+  - job_name: 'kube-state-metrics'
+    static_configs:
+      - targets: ['kube-state-metrics.monitoring.svc.cluster.local:8080']

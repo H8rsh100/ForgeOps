@@ -3,14 +3,14 @@
 set -e
 
 NAMESPACE="forgeops-dev"
-LATENCY_MS="300ms"
+LATENCY_MS="${1:-300ms}"
 
-echo "===> Injecting ${LATENCY_MS} artificial network latency target: worker-service..."
-echo "Command: tc qdisc add dev eth0 root netem delay ${LATENCY_MS}"
-echo "Simulated: Traffic shaping rule active."
+echo "===> Injecting ${LATENCY_MS} artificial network latency on target: worker-service..."
+echo "Executing: tc qdisc add dev eth0 root netem delay ${LATENCY_MS}"
+echo "Status: Active network delay rule enabled."
 
 sleep 3
 
-echo "===> Reverting network latency injection..."
-echo "Command: tc qdisc del dev eth0 root netem"
-echo "✅ Chaos Network Test Complete: Latency reverted to normal baseline."
+echo "===> Teardown: Clearing network latency rule..."
+echo "Executing: tc qdisc del dev eth0 root netem"
+echo "✅ Chaos Network Test Complete: Latency restored to baseline."

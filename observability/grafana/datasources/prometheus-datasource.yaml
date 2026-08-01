@@ -6,6 +6,7 @@ datasources:
     access: proxy
     url: http://prometheus-server.monitoring.svc.cluster.local:80
     isDefault: true
-    editable: true
+    editable: false
     jsonData:
       timeInterval: 15s
+      httpMethod: POST

@@ -1,5 +1,5 @@
 # ForgeOps — Self-Hosted Internal Developer Platform
-*A vast, hands-on DevOps learning project — 3 days, 47 commits (21 / 9 / 17) [COMPLETED v1.0.0]*
+*A vast, hands-on DevOps learning project — 3 days, 47 commits (21 / 9 / 17) [RELEASED v1.0.0]*
 
 ## Why this project
 ForgeOps is a mini **Internal Developer Platform (IDP)**: the same category of system that platform teams at real companies build (think: a scrappy version of what Backstage + ArgoCD + Prometheus gives you). Building it forces you through the *entire* DevOps lifecycle:
@@ -25,4 +25,4 @@ ForgeOps is a mini **Internal Developer Platform (IDP)**: the same category of s
 **Total Completed Commits: 47 / 47** 🎉
 
 ---
-*Tagged Release: v1.0.0*
+*Tagged Release: v1.0.0 — ForgeOps Internal Developer Platform*

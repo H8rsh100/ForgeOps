@@ -4,15 +4,15 @@
   },
   "editable": true,
   "fiscalYearStartMonth": 0,
-  "graphTooltip": 0,
+  "graphTooltip": 1,
   "id": null,
   "links": [],
-  "liveNow": false,
+  "liveNow": true,
   "panels": [
     {
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 0 },
       "id": 1,
-      "title": "API Service Uptime (Seconds)",
+      "title": "API Service Uptime (s)",
       "type": "stat",
       "targets": [
         {
@@ -23,9 +23,9 @@
       ]
     },
     {
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 0 },
       "id": 2,
-      "title": "Total Platform Enqueued Jobs",
+      "title": "Enqueued Platform Jobs",
       "type": "stat",
       "targets": [
         {
@@ -36,9 +36,22 @@
       ]
     },
     {
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 8 },
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 0 },
       "id": 3,
-      "title": "Container CPU Usage by Pod",
+      "title": "Pod Restarts (5m)",
+      "type": "stat",
+      "targets": [
+        {
+          "datasource": "Prometheus",
+          "expr": "sum(changes(kube_pod_container_status_restarts_total{namespace=~\"forgeops-.*\"}[5m]))",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 6 },
+      "id": 4,
+      "title": "Container CPU Utilization by Pod",
       "type": "timeseries",
       "targets": [
         {
@@ -52,7 +65,7 @@
   "refresh": "5s",
   "schemaVersion": 38,
   "style": "dark",
-  "tags": ["forgeops", "idp"],
+  "tags": ["forgeops", "idp", "telemetry"],
   "time": { "from": "now-1h", "to": "now" },
   "title": "ForgeOps Service Health & Telemetry",
   "uid": "forgeops-health"

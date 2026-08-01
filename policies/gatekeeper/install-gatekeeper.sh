@@ -10,4 +10,7 @@ kubectl apply -f "https://raw.githubusercontent.com/open-policy-agent/gatekeeper
 echo "===> Waiting for OPA Gatekeeper controller deployment..."
 kubectl rollout status deployment/gatekeeper-controller-manager -n gatekeeper-system --timeout=120s
 
-echo "✅ OPA Gatekeeper admission control engine successfully installed!"
+echo "===> Verifying Gatekeeper CRDs..."
+kubectl get crd | grep gatekeeper.sh
+
+echo "✅ OPA Gatekeeper admission control engine successfully installed and verified!"

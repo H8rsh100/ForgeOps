@@ -23,3 +23,9 @@ spec:
           not container.resources.limits.memory
           msg := sprintf("Container '%v' must specify a Memory resource limit", [container.name])
         }
+
+        violation[{"msg": msg}] {
+          container := input.review.object.spec.containers[_]
+          not container.resources.requests.cpu
+          msg := sprintf("Container '%v' must specify a CPU resource request", [container.name])
+        }

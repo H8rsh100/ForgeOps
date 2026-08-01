@@ -17,3 +17,9 @@ spec:
           endswith(container.image, ":latest")
           msg := sprintf("Container '%v' uses prohibited ':latest' image tag '%v'. Must use explicit version or SHA.", [container.name, container.image])
         }
+
+        violation[{"msg": msg}] {
+          container := input.review.object.spec.initContainers[_]
+          endswith(container.image, ":latest")
+          msg := sprintf("InitContainer '%v' uses prohibited ':latest' image tag '%v'. Must use explicit version or SHA.", [container.name, container.image])
+        }

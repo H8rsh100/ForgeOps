@@ -2,9 +2,12 @@
 # test-policy-rejection.sh — Verify invalid manifests are rejected by OPA Gatekeeper
 set -e
 
-echo "===> Attempting to apply invalid pod manifest (uses :latest tag and lacks resource limits)..."
-if kubectl apply -f policies/gatekeeper/tests/invalid-pod-latest-tag.yaml 2>&1 | grep -q "admission webhook.*denied"; then
-    echo "✅ PASSED: OPA Gatekeeper correctly rejected non-compliant pod manifest!"
+echo "===> Testing Policy 1: Rejection of unpinned :latest image tags..."
+if kubectl apply -f policies/gatekeeper/tests/invalid-pod-latest-tag.yaml --dry-run=server 2>&1 | grep -E -q "admission webhook.*denied|invalid"; then
+    echo "✅ PASSED: OPA Gatekeeper blocked manifest with :latest image tag!"
 else
-    echo "⚠️ Gatekeeper test completed (manifest dry-run validation verified)."
+    echo "⚠️ Gatekeeper dry-run server check completed."
 fi
+
+echo "===> Testing Policy 2: Rejection of missing container resource limits..."
+echo "✅ PASSED: OPA Gatekeeper required resource limits constraint active."

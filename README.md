@@ -1,6 +1,7 @@
 # ForgeOps — Self-Hosted Internal Developer Platform (IDP)
 
 [![ForgeOps CI](https://github.com/H8rsh100/ForgeOps/actions/workflows/ci.yml/badge.svg)](https://github.com/H8rsh100/ForgeOps/actions)
+[![Release: v1.0.0](https://img.shields.io/badge/Release-v1.0.0-blue.svg)](https://github.com/H8rsh100/ForgeOps/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ForgeOps is a production-grade, self-hosted **Internal Developer Platform (IDP)** architecture built to demonstrate full-lifecycle DevOps, GitOps, Infrastructure-as-Code (IaC), Observability, Policy Enforcement, Chaos Engineering, and Platform Tooling.

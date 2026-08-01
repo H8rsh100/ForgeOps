@@ -19,6 +19,15 @@ groups:
           summary: "Container {{ $labels.container }} memory usage high"
           description: "Memory usage of {{ $labels.container }} is above 85% of assigned limit."
 
+      - alert: HighHttpErrorRate
+        expr: rate(http_requests_total{status=~"5.*"}[5m]) / rate(http_requests_total[5m]) > 0.05
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High HTTP 5xx error rate detected"
+          description: "HTTP 5xx error rate is above 5% over the past 5 minutes."
+
       - alert: ServiceDown
         expr: up{job=~"forgeops-.*"} == 0
         for: 1m

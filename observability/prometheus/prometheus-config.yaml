@@ -1,6 +1,12 @@
 global:
   scrape_interval: 15s
   evaluation_interval: 15s
+  external_labels:
+    cluster: 'forgeops-cluster'
+    environment: 'dev'
+
+rule_files:
+  - 'alerting-rules.yaml'
 
 scrape_configs:
   - job_name: 'prometheus'
@@ -11,6 +17,9 @@ scrape_configs:
     metrics_path: '/metrics'
     static_configs:
       - targets: ['api-service.forgeops-dev.svc.cluster.local:8000']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
 
   - job_name: 'forgeops-worker-service'
     metrics_path: '/health'
